@@ -4,7 +4,7 @@ import 'package:titos/homepage.dart';
 import 'package:titos/foods_manager.dart';
 import 'package:titos/save_manager.dart';
 
-final VERSION_NUMBER = '1.3';
+final VERSION_NUMBER = '1.4';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
