@@ -23,10 +23,11 @@ class _ListPageState extends State<ListPage> {
     setState(() {});
   }
 
-  void openFood(String foodListName, int foodIndex) async {
+  void openFood(Food food) async {
+
     await Navigator.of(context).push(MaterialPageRoute(
         builder: (context) =>
-            FoodDetailsPage(foodListName: foodListName, foodIndex: foodIndex)));
+          FoodDetailsPage(food: food, foodListName: widget.foodListName)));
 
     SaveManager.instance.saveJson(FoodsManager.instance.toJson());
     setState(() {});
@@ -39,33 +40,33 @@ class _ListPageState extends State<ListPage> {
     foods.sort((a, b) => -a.rating.compareTo(b.rating));
 
     int count = 1;
-    for (var i in foods) {
+    for (int i = 0; i < foods.length; i++) {
+      final food = foods[i];
       ret.add(ListTile(
           onTap: () {
             openFood(
-                widget.foodListName,
-                FoodsManager.instance.foodLists[widget.foodListName]!
-                    .indexOf(i));
+                food
+            );
           },
           leading: Text(
             count.toString(),
             style: TextStyle(fontSize: 15),
           ),
           title: Text(
-            i.restaurantName,
+            food.restaurantName,
             style: TextStyle(
                 color: ColorsPalette.tertiary,
                 fontWeight: FontWeight.bold,
                 fontSize: 18),
           ),
           subtitle: Text(
-            " Rating: ${i.rating}/100",
+            " Rating: ${food.rating}/100",
             style: TextStyle(color: ColorsPalette.colorA, fontSize: 12),
           ),
           trailing: ClipRRect(
             borderRadius: BorderRadius.circular(15),
             child: Image.memory(
-              base64Decode(i.pic64),
+              base64Decode(food.pic64),
               width: 50,
               height: 50,
             ),

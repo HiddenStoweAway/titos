@@ -7,11 +7,12 @@ import 'package:titos/loading_page.dart';
 import 'package:titos/save_manager.dart';
 
 class FoodDetailsPage extends StatefulWidget {
-  const FoodDetailsPage(
-      {super.key, required this.foodListName, required this.foodIndex});
-
-  final String foodListName;
-  final int foodIndex;
+  FoodDetailsPage({super.key, required this.foodListName, required this.food}){
+    foodIndex = FoodsManager.instance.foodLists[foodListName]!.indexOf(food);
+  }
+      late final String foodListName;
+      late final int foodIndex;
+      late final Food food;
 
   @override
   State<FoodDetailsPage> createState() => _FoodDetailsPageState();
@@ -57,8 +58,8 @@ class _FoodDetailsPageState extends State<FoodDetailsPage> {
         }
 
         FoodsManager.instance.setFromJson(snapshot.data!);
-        Food food = FoodsManager
-            .instance.foodLists[widget.foodListName]![widget.foodIndex];
+        Food food = widget.food;
+
         restaurantNameTEC.text = food.restaurantName;
         ratingTEC.text = food.rating.toString();
         detailsTEC.text = food.details;
