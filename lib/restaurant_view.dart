@@ -4,19 +4,20 @@ import 'package:titos/add_food_list.dart';
 import 'package:titos/colors_palette.dart';
 import 'package:titos/empty_homepage.dart';
 import 'package:titos/foods_manager.dart';
+import 'package:titos/homepage.dart';
 import 'package:titos/list_page.dart';
 import 'package:titos/loading_page.dart';
 import 'package:titos/restaurant_view.dart';
 import 'save_manager.dart';
 
-class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+class RestaurantView extends StatefulWidget {
+  const RestaurantView({super.key});
 
   @override
-  State<Homepage> createState() => _HomepageState();
+  State<RestaurantView> createState() => _RestaurantViewState();
 }
 
-class _HomepageState extends State<Homepage> {
+class _RestaurantViewState extends State<RestaurantView> {
   String searchText = "";
 
   void addFoodList(BuildContext context) async {
@@ -30,13 +31,6 @@ class _HomepageState extends State<Homepage> {
     setState(() {});
   }
 
-  void removeFoodList(name) {
-    FoodsManager.instance.removeFoodList(name);
-
-    SaveManager.instance.saveJson(FoodsManager.instance.toJson());
-    setState(() {});
-  }
-
   void openFoodList(String name) async {
     await Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => ListPage(foodListName: name)));
@@ -45,85 +39,49 @@ class _HomepageState extends State<Homepage> {
   }
 
   List<Widget> getListTiles() {
+    if (searchText.isEmpty) {
+      return [];
+    }
+
     var ret = <Widget>[];
     var lists = FoodsManager.instance.foodLists;
 
-    for (var i in lists.keys) {
-      // Filter by searchText (case-insensitive)
-      if (searchText.isNotEmpty &&
-          !i.toLowerCase().startsWith(searchText.toLowerCase())) {
-        continue;
-      }
-
-      // GETS THE HIGHEST RATED RESTAURANT
-      double highestRating = 0;
-      String? highestRatedImg;
-      String? highestRated;
-      for (var j in lists[i]!) {
-        if (j.rating > highestRating) {
-          highestRated = j.restaurantName;
-          highestRating = j.rating;
-          highestRatedImg = j.pic64;
+    var foods = <(Food, String)>[];
+    for (var i in lists.entries) {
+      for (var j in i.value) {
+        if (j.restaurantName
+            .toLowerCase()
+            .startsWith(searchText.toLowerCase())) {
+          foods.add((j, i.key));
         }
       }
+    }
 
+    for (var i in foods) {
       ret.add(ListTile(
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Image.memory(
+            base64Decode(i.$1.pic64),
+            width: 50,
+            height: 50,
+          ),
+        ),
         title: Text(
-          i,
+          i.$2,
           style: TextStyle(
               color: ColorsPalette.tertiary,
               fontWeight: FontWeight.bold,
               fontSize: 18),
         ),
-        subtitle: highestRated != null
-            ? Text(
-                "#1: $highestRated",
-                style: TextStyle(color: ColorsPalette.colorA, fontSize: 12),
-              )
-            : null,
-        leading: highestRatedImg != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.memory(
-                  base64Decode(highestRatedImg),
-                  width: 50,
-                  height: 50,
-                ),
-              )
-            : Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                    color: ColorsPalette.tertiary,
-                    borderRadius: BorderRadius.circular(15)),
-              ),
-        onTap: () {
-          openFoodList(i);
-        },
-        trailing: IconButton(
-            onPressed: () {
-              removeFoodList(i);
-            },
-            icon: Icon(
-              Icons.close,
-              color: ColorsPalette.colorA,
-            )),
+        subtitle: Text(
+            " Rating: ${i.$1.rating}/100",
+            style: TextStyle(color: ColorsPalette.colorB, fontSize: 12),
+          ),
       ));
     }
 
     return ret;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    SaveManager.instance.saveJson(FoodsManager.instance.toJson());
-
-    super.dispose();
   }
 
   @override
@@ -144,6 +102,11 @@ class _HomepageState extends State<Homepage> {
               ? EmptyHomepage(addList: addFoodList)
               : Scaffold(
                   backgroundColor: ColorsPalette.primary,
+                  appBar: AppBar(
+                    title: searchText.isEmpty ? Text("Search For A Restaurant: ") : Text("Foods At $searchText:"),
+                    backgroundColor: ColorsPalette.primary,
+                    foregroundColor: ColorsPalette.colorB,
+                  ),
                   body: Column(children: [
                     Expanded(child: ListView(children: getListTiles())),
                     Padding(
@@ -155,13 +118,13 @@ class _HomepageState extends State<Homepage> {
                             onPressed: () {
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
-                                  builder: (context) => const RestaurantView(),
+                                  builder: (context) => const Homepage(),
                                 ),
                                 (route) => false,
                               );
                             },
                             icon: const Icon(Icons.restaurant_menu),
-                            color: ColorsPalette.colorA,
+                            color: ColorsPalette.colorB,
                             iconSize: 35,
                           ),
                           Expanded(
@@ -192,7 +155,7 @@ class _HomepageState extends State<Homepage> {
                               addFoodList(context);
                             },
                             icon: Icon(Icons.add),
-                            color: ColorsPalette.colorA,
+                            color: ColorsPalette.colorB,
                             iconSize: 35,
                           ),
                           IconButton(
@@ -202,7 +165,7 @@ class _HomepageState extends State<Homepage> {
                                   .saveJson(FoodsManager.instance.toJson());
                             },
                             icon: Icon(Icons.clear),
-                            color: ColorsPalette.colorA,
+                            color: ColorsPalette.colorB,
                             iconSize: 35,
                           )
                         ],
