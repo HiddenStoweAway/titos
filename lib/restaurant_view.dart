@@ -38,6 +38,41 @@ class _RestaurantViewState extends State<RestaurantView> {
     setState(() {});
   }
 
+  void deleteFood(String foodName, int index) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: ColorsPalette.primary,
+            title: Text(
+              "Are You Sure You Want To Delete?",
+              style: TextStyle(color: ColorsPalette.colorB),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: ColorsPalette.colorA),
+                ),
+              ),
+              TextButton(
+                  onPressed: () async {
+                    FoodsManager.instance.deleteFood(foodName, index);
+                    await SaveManager.instance
+                        .saveJson(FoodsManager.instance.toJson());
+                    setState(() {});
+                    Navigator.pop(context, 'OK');
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(color: ColorsPalette.colorA),
+                  ))
+            ],
+          );
+        });
+  }
+
   List<Widget> getListTiles() {
     if (searchText.isEmpty) {
       return [];
@@ -46,14 +81,18 @@ class _RestaurantViewState extends State<RestaurantView> {
     var ret = <Widget>[];
     var lists = FoodsManager.instance.foodLists;
 
-    var foods = <(Food, String)>[];
+    // the Food, the Restaurant and the Index in its own foodlist
+    var foods = <(Food, String, int)>[];
     for (var i in lists.entries) {
+      int index = 0;
       for (var j in i.value) {
         if (j.restaurantName
             .toLowerCase()
             .startsWith(searchText.toLowerCase())) {
-          foods.add((j, i.key));
+          foods.add((j, i.key, index));
         }
+
+        index += 1;
       }
     }
 
@@ -75,9 +114,17 @@ class _RestaurantViewState extends State<RestaurantView> {
               fontSize: 18),
         ),
         subtitle: Text(
-            " Rating: ${i.$1.rating}/100",
-            style: TextStyle(color: ColorsPalette.colorB, fontSize: 12),
-          ),
+          " Rating: ${i.$1.rating}/100",
+          style: TextStyle(color: ColorsPalette.colorB, fontSize: 12),
+        ),
+        trailing: IconButton(
+            icon: Icon(
+              Icons.delete,
+              color: ColorsPalette.colorB,
+            ),
+            onPressed: () {
+              deleteFood(i.$2, i.$3);
+            }),
       ));
     }
 
@@ -103,7 +150,9 @@ class _RestaurantViewState extends State<RestaurantView> {
               : Scaffold(
                   backgroundColor: ColorsPalette.primary,
                   appBar: AppBar(
-                    title: searchText.isEmpty ? Text("Search For A Restaurant: ") : Text("Foods At $searchText:"),
+                    title: searchText.isEmpty
+                        ? Text("Search For A Restaurant: ")
+                        : Text("Foods At $searchText:"),
                     backgroundColor: ColorsPalette.primary,
                     foregroundColor: ColorsPalette.colorB,
                   ),

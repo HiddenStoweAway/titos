@@ -59,6 +59,10 @@ class FoodsManager {
   void addFoodList(String name) {
     foodLists[name] = <Food>[];
   }
+  
+  void deleteFood(String listName, int index){
+    foodLists[listName]?.removeAt(index);
+  }
 
   Future<void> addFood(String listName, String restaurantName, double rating, String details, XFile pic) async {
     foodLists[listName]
