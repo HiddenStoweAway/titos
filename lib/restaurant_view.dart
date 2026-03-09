@@ -209,9 +209,9 @@ class _RestaurantViewState extends State<RestaurantView> {
                           ),
                           IconButton(
                             onPressed: () {
-                              FoodsManager.instance.clear();
-                              SaveManager.instance
-                                  .saveJson(FoodsManager.instance.toJson());
+                              setState(() {
+                                searchText = "";
+                              });
                             },
                             icon: Icon(Icons.clear),
                             color: ColorsPalette.colorB,

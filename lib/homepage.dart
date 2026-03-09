@@ -197,9 +197,9 @@ class _HomepageState extends State<Homepage> {
                           ),
                           IconButton(
                             onPressed: () {
-                              FoodsManager.instance.clear();
-                              SaveManager.instance
-                                  .saveJson(FoodsManager.instance.toJson());
+                              setState(() {
+                                searchText = "";
+                              });
                             },
                             icon: Icon(Icons.clear),
                             color: ColorsPalette.colorA,
